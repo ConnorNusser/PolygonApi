@@ -15,16 +15,32 @@ type Storage interface {
 	GetStockByTicker(string) ([]*DailyStock, error)
 }
 type DailyStock struct {
-	AfterHours int     `json:"afterHours"`
-	Close      string  `json:"close"`
+	AfterHours float64 `json:"afterHours"`
+	Close      float64 `json:"close"`
 	From       string  `json:"from"`
-	High       float32 `json:"high"`
-	Low        float32 `json:"low"`
-	Open       float32 `json:"open"`
-	PreMarket  float32 `json:"preMarket"`
+	High       float64 `json:"high"`
+	Low        float64 `json:"low"`
+	Open       float64 `json:"open"`
+	PreMarket  float64 `json:"preMarket"`
 	Status     string  `json:"status"`
 	Symbol     string  `json:"symbol"`
-	Volume     int64   `json:"volume"`
+	Volume     float64 `json:"volume"`
+}
+
+func newDailyStock(afterHours float64, close float64, from string, high float64, low float64, open float64, preMarket float64, status string, symbol string, volume float64) *DailyStock {
+	d := DailyStock{
+		AfterHours: afterHours,
+		Close:      close,
+		From:       from,
+		High:       high,
+		Low:        low,
+		Open:       open,
+		PreMarket:  preMarket,
+		Status:     status,
+		Symbol:     symbol,
+		Volume:     volume,
+	}
+	return &d
 }
 
 type PostgresStore struct {

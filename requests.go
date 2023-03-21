@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"net/http"
@@ -9,7 +10,10 @@ import (
 
 	"github.com/gorilla/mux"
 	polygon "github.com/polygon-io/client-go/rest"
+	"github.com/polygon-io/client-go/rest/models"
 )
+
+const dateLayout string = "2021-11-22"
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
@@ -61,6 +65,14 @@ func (s *ApiServer) lastDaily(writer http.ResponseWriter, request *http.Request)
 	}
 	return nil
 }
+func polygonApiCall(ticker string, date time.Time) *models.GetDailyOpenCloseAggParams {
+	params := models.GetDailyOpenCloseAggParams{
+		Ticker: ticker,
+		Date:   models.Date(date),
+	}
+
+	return &params
+}
 func (s *ApiServer) getLastDaily(writer http.ResponseWriter, request *http.Request) error {
 	days, err := getDays(request)
 	if err == nil {
@@ -69,8 +81,25 @@ func (s *ApiServer) getLastDaily(writer http.ResponseWriter, request *http.Reque
 	return s.getLastDailyTen(writer, request)
 }
 func (s *ApiServer) getLastDailyTen(writer http.ResponseWriter, request *http.Request) error {
+	getDaily := []*models.GetDailyOpenCloseAggResponse{}
+	ticker := getTicker(request)
+	n := 0
+	for n < 10 {
+		curr := time.Now().AddDate(0, 0, -n)
+		params := polygonApiCall(ticker, curr)
+		getDailyInstance, err := s.polyInstance.GetDailyOpenCloseAgg(context.Background(), params)
+		n += 1
+		if err != nil {
+			getDaily = append(getDaily, getDailyInstance)
+		}
+	}
+	for _, value := range getDaily {
+		ds := newDailyStock(value.AfterHours, value.Close, value.From, value.High, value.Low, value.Open, value.PreMarket, value.Status, value.Symbol, value.Volume)
+		s.store.CreateStock(ds)
+	}
 	return nil
 }
+
 func (s *ApiServer) getLastDailyRange(writer http.ResponseWriter, request *http.Request, days int) error {
 	return nil
 }
@@ -79,13 +108,9 @@ func (s *ApiServer) submitLastDaily(writer http.ResponseWriter, request *http.Re
 	return nil
 }
 
-func getTicker(r *http.Request) (int, error) {
+func getTicker(r *http.Request) string {
 	idStr := mux.Vars(r)["ticker"]
-	id, err := strconv.Atoi(idStr)
-	if err != nil {
-		return id, fmt.Errorf("invalid id given %s", idStr)
-	}
-	return id, nil
+	return idStr
 }
 func getDays(r *http.Request) (int, error) {
 	daysStr := mux.Vars(r)["days"]
@@ -94,8 +119,4 @@ func getDays(r *http.Request) (int, error) {
 		return days, fmt.Errorf("invalid days or none given %s", days)
 	}
 	return days, nil
-}
-func Hello() {
-	var apiString = "https://api.polygon.io/v1/open-close/"
-	fmt.Println(apiString)
 }
