@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/gorilla/mux"
+	polygon "github.com/polygon-io/client-go/rest"
 )
 
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
@@ -31,16 +32,18 @@ func makeHttpRequestHandler(f apiFunc) http.HandlerFunc {
 }
 
 type ApiServer struct {
-	listAddr string
-	currDay  time.Time
-	store    Storage
+	listAddr     string
+	currDay      time.Time
+	store        Storage
+	polyInstance polygon.Client
 }
 
-func NewApiServer(listenAddress string, store Storage) *ApiServer {
+func NewApiServer(listenAddress string, store Storage, client polygon.Client) *ApiServer {
 	return &ApiServer{
-		listAddr: listenAddress,
-		currDay:  time.Now(),
-		store:    store,
+		listAddr:     listenAddress,
+		currDay:      time.Now(),
+		store:        store,
+		polyInstance: client,
 	}
 }
 

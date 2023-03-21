@@ -11,6 +11,6 @@ func main() {
 	if err != nil {
 		return
 	}
-	server := NewApiServer(":8080", storage)
+	server := NewApiServer(":8080", storage, *polygonApi)
 	server.Run()
 }

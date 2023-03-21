@@ -24,7 +24,7 @@ type DailyStock struct {
 	PreMarket  float32 `json:"preMarket"`
 	Status     string  `json:"status"`
 	Symbol     string  `json:"symbol"`
-	Volume     int64   `json:volume`
+	Volume     int64   `json:"volume"`
 }
 
 type PostgresStore struct {
