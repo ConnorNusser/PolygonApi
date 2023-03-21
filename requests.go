@@ -48,7 +48,6 @@ func NewApiServer(listenAddress string, store Storage, client polygon.Client) *A
 }
 
 func (s *ApiServer) Run() {
-	fmt.Println("Working")
 	router := mux.NewRouter()
 	router.HandleFunc("/lastDaily/{ticker}/{days}", makeHttpRequestHandler(s.lastDaily))
 	http.ListenAndServe(s.listAddr, router)
