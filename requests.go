@@ -33,12 +33,14 @@ func makeHttpRequestHandler(f apiFunc) http.HandlerFunc {
 type ApiServer struct {
 	listAddr string
 	currDay  time.Time
+	store    Storage
 }
 
-func NewApiServer(listenAddress string) *ApiServer {
+func NewApiServer(listenAddress string, store Storage) *ApiServer {
 	return &ApiServer{
 		listAddr: listenAddress,
 		currDay:  time.Now(),
+		store:    store,
 	}
 }
 
