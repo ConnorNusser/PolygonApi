@@ -8,7 +8,7 @@ import (
 )
 
 type Storage interface {
-	CreateStockTable() error
+	createStockTable() error
 	CreateStock(*DailyStock) error
 	DeleteStock(string) error
 	GetStocks() ([]*DailyStock, error)
@@ -46,20 +46,23 @@ func NewPostgresStore() (*PostgresStore, error) {
 		db: db,
 	}, nil
 }
-
 func (s *PostgresStore) Init() error {
-	return s.createAccountTable()
+	return s.createStockTable()
 }
 
-func (s *PostgresStore) createAccountTable() error {
-	query := `create table if not exists account (
+func (s *PostgresStore) createStockTable() error {
+	query := `create table if not exists stocks (
 		id serial primary key,
-		first_name varchar(100),
-		last_name varchar(100),
-		number serial,
-		encrypted_password varchar(100),
-		balance serial,
-		created_at timestamp
+		AfterHours varchar(100),
+		Close varchar(100),
+		From serial,
+		High varchar(100),
+		Low serial,
+		Open serial,
+		PreMarket serial, 
+		Status boolean,
+		Symbol string,
+		Volume serial
 	)`
 
 	_, err := s.db.Exec(query)
@@ -95,7 +98,7 @@ func (s *PostgresStore) UpdateAccount(*DailyStock) error {
 	return nil
 }
 
-func (s *PostgresStore) DeleteAccount(ticker string) error {
+func (s *PostgresStore) DeleteStock(ticker string) error {
 	_, err := s.db.Query("delete from account where Symbol = $1", ticker)
 	return err
 }
@@ -113,14 +116,21 @@ func (s *PostgresStore) GetStocksByDay(number int) (*DailyStock, error) {
 	return nil, fmt.Errorf("account with number [%d] not found", number)
 }
 
-func (s *PostgresStore) GetStockByTicker(symbol string) (*DailyStock, error) {
+func (s *PostgresStore) GetStockByTicker(symbol string) ([]*DailyStock, error) {
 	rows, err := s.db.Query("select * from stocks where Symbol = [%d]", symbol)
 	if err != nil {
 		return nil, err
 	}
-
+	stockProfile := []*DailyStock{}
 	for rows.Next() {
-		return scanStockIn(rows)
+		stock, err := scanStockIn(rows)
+		if err != nil {
+			return nil, err
+		}
+		stockProfile = append(stockProfile, stock)
+	}
+	if len(stockProfile) > 1 {
+		return stockProfile, nil
 	}
 
 	return nil, fmt.Errorf("account %d not found", symbol)
