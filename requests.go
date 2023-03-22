@@ -93,6 +93,7 @@ func (s *ApiServer) getLastDailyTen(writer http.ResponseWriter, request *http.Re
 		}
 	}
 	for _, value := range getDaily {
+		fmt.Println(value)
 		ds := newDailyStock(value.AfterHours, value.Close, value.From, value.High, value.Low, value.Open, value.PreMarket, value.Status, value.Symbol, value.Volume)
 		s.store.CreateStock(ds)
 	}
