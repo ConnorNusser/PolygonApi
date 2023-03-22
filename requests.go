@@ -13,8 +13,6 @@ import (
 	"github.com/polygon-io/client-go/rest/models"
 )
 
-const dateLayout string = "2021-11-22"
-
 func WriteJSON(w http.ResponseWriter, status int, v any) error {
 	w.WriteHeader(status)
 	w.Header().Set("Content-Type", "application/json")
@@ -53,6 +51,7 @@ func NewApiServer(listenAddress string, store Storage, client polygon.Client) *A
 
 func (s *ApiServer) Run() {
 	router := mux.NewRouter()
+	router.HandleFunc("/lastDaily/{ticker}", makeHttpRequestHandler(s.lastDaily))
 	router.HandleFunc("/lastDaily/{ticker}/{days}", makeHttpRequestHandler(s.lastDaily))
 	http.ListenAndServe(s.listAddr, router)
 }

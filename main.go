@@ -7,6 +7,7 @@ import (
 func main() {
 	polygonApi := polygon.New("FVcbDR6ZtUfTl2URJWZfPVRFNkL2kvnJ")
 	storage, err := NewPostgresStore()
+	storage.Init()
 
 	if err != nil {
 		return

@@ -17,7 +17,7 @@ type Storage interface {
 type DailyStock struct {
 	AfterHours float64 `json:"afterHours"`
 	Close      float64 `json:"close"`
-	From       string  `json:"from"`
+	FromVal    string  `json:"from"`
 	High       float64 `json:"high"`
 	Low        float64 `json:"low"`
 	Open       float64 `json:"open"`
@@ -31,7 +31,7 @@ func newDailyStock(afterHours float64, close float64, from string, high float64,
 	d := DailyStock{
 		AfterHours: afterHours,
 		Close:      close,
-		From:       from,
+		FromVal:    from,
 		High:       high,
 		Low:        low,
 		Open:       open,
@@ -48,7 +48,7 @@ type PostgresStore struct {
 }
 
 func NewPostgresStore() (*PostgresStore, error) {
-	connStr := "postgres://postgres:postgrespw@localhost:32768?sslmode=disable"
+	connStr := "postgres://postgres:postgrespw@localhost:32772?sslmode=disable"
 	db, err := sql.Open("postgres", connStr)
 	if err != nil {
 		return nil, err
@@ -69,16 +69,15 @@ func (s *PostgresStore) Init() error {
 
 func (s *PostgresStore) createStockTable() error {
 	query := `create table if not exists stocks (
-		id serial primary key,
 		AfterHours varchar(100),
 		Close varchar(100),
-		From serial,
+		FromVal varchar(100),
 		High varchar(100),
 		Low serial,
 		Open serial,
 		PreMarket serial, 
-		Status boolean,
-		Symbol string,
+		Status varchar(100),
+		Symbol varchar(100),
 		Volume serial
 	)`
 
@@ -88,14 +87,14 @@ func (s *PostgresStore) createStockTable() error {
 
 func (s *PostgresStore) CreateStock(stock *DailyStock) error {
 	query := `insert into stocks 
-	(AfterHours, Close, From, High, Low, Open, PreMarket, Status, Symbol, Volume)
+	(AfterHours, Close, FromVal, High, Low, Open, PreMarket, Status, Symbol, Volume)
 	values ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10)`
 
 	_, err := s.db.Query(
 		query,
 		stock.AfterHours,
 		stock.Close,
-		stock.From,
+		stock.FromVal,
 		stock.High,
 		stock.Low,
 		stock.Open,
@@ -176,7 +175,7 @@ func scanStockIn(rows *sql.Rows) (*DailyStock, error) {
 	err := rows.Scan(
 		&stock.AfterHours,
 		&stock.Close,
-		&stock.From,
+		&stock.FromVal,
 		&stock.High,
 		&stock.Low,
 		&stock.Open,
