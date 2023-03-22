@@ -73,12 +73,12 @@ func (s *PostgresStore) createStockTable() error {
 		Close varchar(100),
 		FromVal varchar(100),
 		High varchar(100),
-		Low serial,
-		Open serial,
-		PreMarket serial, 
+		Low varchar(100),
+		Open varchar(100),
+		PreMarket varchar(100), 
 		Status varchar(100),
 		Symbol varchar(100),
-		Volume serial
+		Volume varchar(100)
 	)`
 
 	_, err := s.db.Exec(query)

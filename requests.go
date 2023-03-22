@@ -88,17 +88,13 @@ func (s *ApiServer) getLastDailyTen(writer http.ResponseWriter, request *http.Re
 		if curr.Weekday() != time.Saturday || curr.Weekday() != time.Sunday {
 			params := polygonApiCall(ticker, curr)
 			getDailyInstance, err := s.polyInstance.GetDailyOpenCloseAgg(context.Background(), params)
-			fmt.Println(getDailyInstance)
-			fmt.Println("YO")
-			if err != nil {
+			if err == nil {
 				getDaily = append(getDaily, getDailyInstance)
 			}
 		}
 		n += 1
 	}
 	for _, value := range getDaily {
-		fmt.Println(value)
-		fmt.Println("hi this is connor")
 		ds := newDailyStock(value.AfterHours, value.Close, value.From, value.High, value.Low, value.Open, value.PreMarket, value.Status, value.Symbol, value.Volume)
 		s.store.CreateStock(ds)
 	}
